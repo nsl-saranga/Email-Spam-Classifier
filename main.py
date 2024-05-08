@@ -1,26 +1,51 @@
-import nltk
 import pandas as pd
-nltk.download()
+import string
+import re
+import nltk
 
-rawData = open('SMSSpamCollection.tsv').read() # python sees this as a very long string.
-# print(rawData[0:500])
-
-parsedData = rawData.replace('\t', '\n').split('\n')
-# print(parsedData[0:9])
-
-labelList = parsedData[0::2]
-textList = parsedData[1::2]
-
-# print(labelList)
-# print(textList)
-
-fullCorpus = pd.DataFrame(
-    {
-        "label": labelList[:-1],
-        "text": textList
-    }
-)
-
-fullCorpus.head()
+df = pd.read_csv('SMSSpamCollection.tsv', sep='\t', header=None)
+df.columns = ["Labels", "Texts"]
+# print(df)
+# print(len(df[df['Labels'] == "ham"]))
+# print(len(df[df['Labels'] == "spam"]))
+# print(df["Labels"].isnull().sum())
+# print(df["Labels"].isnull().sum())
+print(string.punctuation)
 
 
+def remove_punctuation(text):
+    removed_punctuation_text = ""
+    for char in text:
+        if char not in string.punctuation:
+            removed_punctuation_text += char
+    return removed_punctuation_text
+
+
+df["punctuation_removed_text"] = df["Texts"].apply(remove_punctuation)
+
+
+def tolkenize(text):
+    tolkens = re.split('\W+',text)
+    return tolkens
+
+
+df["lowercased_text"] = df["punctuation_removed_text"].str.lower()
+
+df["tolkenized _text"] = df["lowercased_text"].apply(tolkenize)
+
+
+nltk.download('stopwords')
+stopwords = nltk.corpus.stopwords.words('english')
+
+
+def remove_stopwords(tolkenized_text):
+    removed_stopwords_list = []
+    for word in tolkenized_text:
+        if word not in stopwords:
+            removed_stopwords_list.append(word)
+    return removed_stopwords_list
+
+
+df["stopword_removed_text"] = df["tolkenized _text"].apply(remove_stopwords)
+
+print(df.head())
