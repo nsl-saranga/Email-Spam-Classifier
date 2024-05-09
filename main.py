@@ -2,6 +2,7 @@ import pandas as pd
 import string
 import re
 import nltk
+from nltk.stem import WordNetLemmatizer
 
 df = pd.read_csv('SMSSpamCollection.tsv', sep='\t', header=None)
 df.columns = ["Labels", "Texts"]
@@ -48,4 +49,17 @@ def remove_stopwords(tolkenized_text):
 
 df["stopword_removed_text"] = df["tolkenized _text"].apply(remove_stopwords)
 
+nltk.download('wordnet')
+wn = WordNetLemmatizer()
+
+
+def lemmatizing(cleaned_text):
+    lemmatized_list = []
+    for word in cleaned_text:
+        lemmatized_list.append(wn.lemmatize(word))
+    return lemmatized_list
+
+
+df["lemmatized_text"] = df["stopword_removed_text"].apply(lemmatizing)
+pd.set_option('display.max_columns', None)
 print(df.head())
